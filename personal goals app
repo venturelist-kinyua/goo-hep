@@ -1,0 +1,77 @@
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+app.listen(3000, () => {
+  console.log('Server started on port 3000');
+});
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb://localhost/goals-app', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => {
+  console.log('Connected to MongoDB');
+}).catch((err) => {
+  console.error('Error connecting to MongoDB', err);
+});
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+  username: String,
+  password: String
+});
+
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;
+const mongoose = require('mongoose');
+
+const goalSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  deadline: Date,
+  completed: Boolean,
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+});
+
+const Goal = mongoose.model('Goal', goalSchema);
+
+module.exports = Goal;
+const express = require('express');
+const User = require('./models/user');
+const router = express.Router();
+
+router.post('/register', async (req, res) => {
+  const { username, password } = req.body;
+  const user = new User({ username, password });
+  await user.save();
+  res.send('User created successfully');
+});
+
+module.exports = router;
+const express = require('express');
+const Goal = require('./models/goal');
+const router = express.Router();
+
+router.post('/goals', async (req, res) => {
+  const { title, description, deadline } = req.body;
+  const goal = new Goal({ title, description, deadline, completed: false });
+  await goal.save();
+  res.send('Goal created successfully');
+});
+
+module.exports = router;
+const express = require('express');
+const app = express();
+const userRoutes = require('./routes/users');
+const goalRoutes = require('./routes/goals');
+
+app.use(express.json());
+app.use('/users', userRoutes);
+app.use('/api', goalRoutes);
+
+app.listen(3000, () => {
+  console.log('Server started on port 3000');
+});
